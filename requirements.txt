@@ -1,0 +1,3 @@
+# No external dependencies required - runs on pure Python 3 standard library!
+# Optional development dependencies:
+pytest>=7.0.0
