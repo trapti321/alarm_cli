@@ -133,9 +133,16 @@ class AlarmManager:
 
         return triggered
 
+    def get_alarm_by_id(self, alarm_id: int) -> Optional[Dict[str, Any]]:
+        self.load()
+        for a in self.alarms:
+            if a.get("id") == alarm_id:
+                return a
+        return None
+
     @staticmethod
     def format_countdown(target_iso: str, now: Optional[datetime] = None) -> str:
-        """Formats remaining time as '1h 25m 10s' or 'triggered'."""
+        """Formats remaining time as '1h 25m 10s' or 'Now / Due'."""
         if now is None:
             now = datetime.now()
         target = datetime.fromisoformat(target_iso)
@@ -154,3 +161,23 @@ class AlarmManager:
             parts.append(f"{minutes}m")
         parts.append(f"{seconds}s")
         return " ".join(parts)
+
+    @staticmethod
+    def format_digital_countdown(target_iso: str, now: Optional[datetime] = None) -> str:
+        """Formats remaining time as digital clock 'HH:MM:SS' or 'DDd HH:MM:SS'."""
+        if now is None:
+            now = datetime.now()
+        target = datetime.fromisoformat(target_iso)
+        diff = (target - now).total_seconds()
+        if diff <= 0:
+            return "00:00:00"
+
+        total_sec = int(diff)
+        days, rem = divmod(total_sec, 86400)
+        hours, rem = divmod(rem, 3600)
+        minutes, seconds = divmod(rem, 60)
+
+        if days > 0:
+            return f"{days}d {hours:02d}:{minutes:02d}:{seconds:02d}"
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+

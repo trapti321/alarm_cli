@@ -11,13 +11,18 @@ A lightweight, zero-dependency, natural-language Python CLI alarm clock. Set ala
   - **Named Alarms**: `set alarm for dinner at 8pm`, `set alarm for meeting at 14:00`
   - **Relative Duration**: `set alarm for 20s`, `set alarm for 30m`, `set alarm for 2h`, `set alarm for 1h 30m`
   - **Shorthand Format**: `tea in 5m`, `workout in 45m`, `dinner at 8pm`
+  - **Timer & Live Countdown**: `timer 30s`, `countdown 5m`, `set alarm for 10s --countdown`
+- ⏳ **Live Real-time Countdown**:
+  - Live ticking countdown clocks in terminal (`HH:MM:SS` format).
+  - Multi-alarm visual monitor.
 - 📋 **Alarm Management**: List pending alarms, check remaining countdowns, cancel by ID or name, and clear all.
 - 🔔 **Audio & Visual Alerts**:
   - Standout ANSI visual notification banners in terminal.
   - Native sound playback across macOS (`afplay`), Linux (`paplay`/`aplay`), and Windows (`winsound`/bell).
   - Native desktop system notifications (`osascript` on macOS, `notify-send` on Linux, PowerShell on Windows).
-- 🔄 **Two Execution Modes**:
+- 🔄 **Execution Modes**:
   - **Interactive REPL Shell**: Live interactive shell with background scheduler thread that rings alarms while you work.
+  - **Live Countdown Mode**: Real-time ticker clock that counts down to zero.
   - **Single CLI Command Mode**: Quick one-liner execution from bash/zsh scripts or terminal.
 - ⚡ **Zero External Dependencies**: Pure Python 3 standard library.
 
@@ -35,6 +40,18 @@ Run the interactive shell:
 python3 run_alarm.py
 ```
 
+Show live countdown of active alarms:
+```bash
+python3 run_alarm.py countdown
+```
+
+Or set an alarm directly with live countdown:
+```bash
+python3 run_alarm.py "timer 20s"
+# or
+python3 run_alarm.py "set alarm for 30s --countdown"
+```
+
 Or set an alarm directly in one command:
 ```bash
 python3 run_alarm.py "set alarm for 20s"
@@ -49,13 +66,14 @@ pip install -e .
 Then run simply:
 ```bash
 alarm
+alarm countdown
 ```
 
 ---
 
 ## 📖 Command Reference & Examples
 
-### 1. Setting Alarms
+### 1. Setting Alarms & Timers
 
 | Command | Description |
 | :--- | :--- |
@@ -69,19 +87,23 @@ alarm
 | `set alarm for 2h` | Relative alarm in 2 hours |
 | `set alarm for 1h 30m` | Combined relative duration (1 hour 30 mins) |
 | `tea in 5m` | Shorthand named timer for "tea" in 5 mins |
+| `timer 30s` / `countdown 1m` | Set timer and view live ticking countdown |
+| `set alarm for 15s --countdown` | Set alarm and immediately start live countdown |
 
 ---
 
-### 2. Managing Alarms
+### 2. Managing Alarms & Live Countdown
 
 | Command | Description |
 | :--- | :--- |
+| `countdown` or `show countdown` | Display real-time live ticking countdown clock for all active alarms |
 | `list` or `ls` | Show all active alarms, target times, and remaining countdowns |
 | `cancel 1` | Cancel pending alarm with ID `#1` |
 | `cancel dinner` | Cancel pending alarm matching name `"dinner"` |
 | `clear` | Cancel all active alarms |
 | `help` | Show command help |
 | `exit` or `quit` | Exit the interactive shell |
+
 
 ---
 

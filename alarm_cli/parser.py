@@ -137,6 +137,13 @@ def parse_command(raw_input: str, now: Optional[datetime] = None) -> Dict[str, A
     if lower_cmd in ["exit", "quit", "q"]:
         return {"action": "exit", "raw": cmd}
 
+    # Live countdown display commands
+    if lower_cmd in [
+        "countdown", "show countdown", "timer", "show timer", "timers",
+        "countdowns", "live", "live countdown", "watch countdown", "status"
+    ]:
+        return {"action": "countdown", "raw": cmd}
+
     # List alarms
     if lower_cmd in ["list", "ls", "show", "list alarms", "show alarms", "alarms"]:
         return {"action": "list", "raw": cmd}
@@ -155,19 +162,31 @@ def parse_command(raw_input: str, now: Optional[datetime] = None) -> Dict[str, A
             "raw": cmd
         }
 
-    # Strip prefixes like "set alarm for", "set alarm", "set an alarm for", "alarm for", "alarm"
+    # Check for --countdown or -c flag
+    show_countdown = False
     clean_text = cmd
+    if re.search(r'(?:^|\s)(?:--countdown|-c)(?:\s|$)', clean_text, re.IGNORECASE):
+        show_countdown = True
+        clean_text = re.sub(r'(?:^|\s)(?:--countdown|-c)(?:\s|$)', ' ', clean_text, flags=re.IGNORECASE).strip()
+
+    # Strip prefixes like "set alarm for", "set alarm", "set an alarm for", "alarm for", "alarm"
     prefixes = [
-        r'^set\s+(?:an\s+)?alarm\s+(?:for\s+)?',
-        r'^alarm\s+(?:for\s+)?',
-        r'^set\s+',
-        r'^remind\s+me\s+to\s+',
-        r'^remind\s+me\s+for\s+',
+        (r'^set\s+(?:an\s+)?alarm\s+(?:for\s+)?', False),
+        (r'^alarm\s+(?:for\s+)?', False),
+        (r'^set\s+(?:a\s+)?timer\s+(?:for\s+)?', True),
+        (r'^timer\s+(?:for\s+)?', True),
+        (r'^countdown\s+(?:for\s+)?', True),
+        (r'^set\s+(?:a\s+)?countdown\s+(?:for\s+)?', True),
+        (r'^set\s+', False),
+        (r'^remind\s+me\s+to\s+', False),
+        (r'^remind\s+me\s+for\s+', False),
     ]
-    for p in prefixes:
+    for p, triggers_countdown in prefixes:
         m = re.match(p, clean_text, re.IGNORECASE)
         if m:
             clean_text = clean_text[m.end():].strip()
+            if triggers_countdown:
+                show_countdown = True
             break
 
     # Check for named time: "<label> at <time>" (e.g. "dinner at 8pm", "meeting at 14:30")
@@ -182,6 +201,7 @@ def parse_command(raw_input: str, now: Optional[datetime] = None) -> Dict[str, A
                 "target_time": target_dt,
                 "label": label if label else "Alarm",
                 "duration_sec": int((target_dt - now).total_seconds()),
+                "show_countdown": show_countdown,
                 "raw": cmd
             }
 
@@ -198,6 +218,7 @@ def parse_command(raw_input: str, now: Optional[datetime] = None) -> Dict[str, A
                 "target_time": target_dt,
                 "label": label if label else "Alarm",
                 "duration_sec": dur_sec,
+                "show_countdown": show_countdown,
                 "raw": cmd
             }
 
@@ -214,6 +235,7 @@ def parse_command(raw_input: str, now: Optional[datetime] = None) -> Dict[str, A
             "target_time": target_dt,
             "label": "Alarm",
             "duration_sec": dur_sec,
+            "show_countdown": show_countdown,
             "raw": cmd
         }
 
@@ -229,6 +251,7 @@ def parse_command(raw_input: str, now: Optional[datetime] = None) -> Dict[str, A
             "target_time": target_dt,
             "label": "Alarm",
             "duration_sec": int((target_dt - now).total_seconds()),
+            "show_countdown": show_countdown,
             "raw": cmd
         }
 
@@ -237,3 +260,4 @@ def parse_command(raw_input: str, now: Optional[datetime] = None) -> Dict[str, A
         "raw": cmd,
         "error": f"Could not recognize command: '{cmd}'. Type 'help' for examples."
     }
+

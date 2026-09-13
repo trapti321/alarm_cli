@@ -87,6 +87,23 @@ class TestAlarmParser(unittest.TestCase):
         self.assertEqual(parse_command("help")["action"], "help")
         self.assertEqual(parse_command("exit")["action"], "exit")
 
+    def test_countdown_commands(self):
+        self.assertEqual(parse_command("countdown")["action"], "countdown")
+        self.assertEqual(parse_command("show countdown")["action"], "countdown")
+        self.assertEqual(parse_command("timer")["action"], "countdown")
+        self.assertEqual(parse_command("live")["action"], "countdown")
+        self.assertEqual(parse_command("watch countdown")["action"], "countdown")
+
+    def test_timer_set_with_countdown(self):
+        res = parse_command("timer 20s", self.now)
+        self.assertEqual(res["action"], "set")
+        self.assertEqual(res["duration_sec"], 20)
+        self.assertTrue(res["show_countdown"])
+
+        res2 = parse_command("set alarm for 10s --countdown", self.now)
+        self.assertEqual(res2["action"], "set")
+        self.assertTrue(res2["show_countdown"])
+
 
 class TestAlarmManager(unittest.TestCase):
 
@@ -142,6 +159,16 @@ class TestAlarmManager(unittest.TestCase):
         self.assertEqual(triggered[0]["label"], "Old Alarm")
         self.assertEqual(len(self.manager.list_active_alarms()), 1)
 
+    def test_format_digital_countdown(self):
+        now = datetime(2026, 9, 13, 14, 0, 0)
+        target = datetime(2026, 9, 13, 14, 2, 15)
+        digital = AlarmManager.format_digital_countdown(target.isoformat(), now=now)
+        self.assertEqual(digital, "00:02:15")
+
+        past = datetime(2026, 9, 13, 13, 59, 0)
+        self.assertEqual(AlarmManager.format_digital_countdown(past.isoformat(), now=now), "00:00:00")
+
 
 if __name__ == "__main__":
     unittest.main()
+
